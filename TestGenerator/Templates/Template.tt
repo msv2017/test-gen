@@ -1,0 +1,52 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.CodeDom" #>
+<#@ import namespace="System.CodeDom.Compiler" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using AutoFixture;
+using Xunit;
+
+namespace UnitTests
+{
+    public class <#= _sut #>Test
+    {
+        private readonly Fixture _fixture;
+        
+        private readonly <#= _sut #> _sut;
+        
+<# foreach(var service in _services) { #>
+        private readonly <#= service.type #> _<#= service.name #>;
+<# } #>
+        
+        public <#= _sut #>Test
+        {
+            _fixture = new Fixture();
+            
+<# foreach(var service in _services) { #>
+            _<#= service.name #> = _fixture.Freeze<<#= service.type #>>();
+<# } #>
+            
+            _sut = _fixture.Create<<#= _sut #>>();
+        }
+<# foreach(var m in _methods) { #>
+        
+        [Fact]
+        public void <#= m.Key.name #>_Test()
+        {
+            // Arrange
+<# foreach(var call in m.Value) { #>
+            <#= call.service #>.<#= call.method #>
+<# } #>
+            
+            // Act
+            _sut.<#= m.Key.fullName #>;
+            
+            // Assert
+        }
+<# } #>
+    }
+}
+
+
